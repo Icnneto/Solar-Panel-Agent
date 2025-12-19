@@ -36,8 +36,16 @@ export interface SolarBuildingInsights {
 
 export interface SolarFinancials {
     annualGenerationKwh: number;
-    annualSavingsBrl: number;
+    annualSavingsUsd: number;
     paybackYears: number;
     twentyYearSavings: number;
     systemSizeKw: number;
+    installationCost: number;
+}
+
+export type ServiceResponse<T = null> = {
+    success: boolean;
+    message: string;
+    data?: T;
+    error?: any;
 }

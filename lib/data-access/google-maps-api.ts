@@ -1,7 +1,7 @@
 import 'dotenv/config';
-import { GeocodingResponse, LatLng } from "../types";
+import { GeocodingResponse, LatLng, ServiceResponse } from "../types";
 
-export async function getCoordsFromAddress(address: string): Promise<LatLng> {
+export async function getCoordsFromAddress(address: string): Promise<ServiceResponse<LatLng>> {
     const baseUrl = process.env.BASE_URL_MAPS;
 
     const params = new URLSearchParams({
@@ -10,19 +10,28 @@ export async function getCoordsFromAddress(address: string): Promise<LatLng> {
     });
 
     const fullUrl = `${baseUrl}?${params.toString()}`;
-    console.log(fullUrl)
 
     const res = await fetch(fullUrl);
 
     if (!res.ok) {
-        throw new Error(`Network response was not ok: ${res.statusText}`);
+        return {
+            success: false,
+            message: `Network response was not ok: ${res.statusText}`,
+        }
     }
 
     const data: GeocodingResponse = await res.json();
 
     if (data.status !== 'OK') {
-        throw new Error(`Geocoding failed with status: ${data.status}`)
+        return {
+            success: false,
+            message: `Geocoding failed with status: ${data.status}`,
+        }
     };
 
-    return data.results[0].geometry.location
+    return {
+        success: true,
+        message: `Data retrieved successfully for the address: ${address}`,
+        data: data.results[0].geometry.location
+    } 
 };

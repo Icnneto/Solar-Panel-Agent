@@ -1,7 +1,7 @@
 import 'dotenv/config';
-import { LatLng, SolarBuildingInsights } from "../types";
+import { LatLng, ServiceResponse, SolarBuildingInsights } from "../types";
 
-export async function fetchSolarInsights(coords: LatLng): Promise<SolarBuildingInsights> {
+export async function fetchSolarInsights(coords: LatLng): Promise<ServiceResponse<SolarBuildingInsights>> {
     const url = `${process.env.BASE_URL_SOLAR}/buildingInsights:findClosest`;
 
     const params = new URLSearchParams({
@@ -15,8 +15,19 @@ export async function fetchSolarInsights(coords: LatLng): Promise<SolarBuildingI
 
     if (!res.ok) {
         const errorBody = await res.json().catch(() => ({}));
-        throw new Error(`Solar API Error: ${res.statusText}. ${JSON.stringify(errorBody)}`);
+
+        return {
+            success: false,
+            message: `Solar API Error: ${res.statusText}. ${JSON.stringify(errorBody)}`,
+            error: errorBody
+        }
     }
 
-    return res.json();
+    const solarInsights: SolarBuildingInsights = await res.json();
+
+    return {
+        success: true,
+        message: `Solar insights retrieved successfully`,
+        data: solarInsights
+    }
 };
