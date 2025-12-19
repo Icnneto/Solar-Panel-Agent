@@ -23,7 +23,6 @@ export interface GeocodingResponse {
     }[];
 }
 
-// Solar Types (MVP Focused)
 export interface SolarBuildingInsights {
     name: string;
     center: LatLng;
@@ -33,4 +32,12 @@ export interface SolarBuildingInsights {
         carbonOffsetFactorKgPerMwh: number;
         // Add more fields here as you scale
     };
+}
+
+export interface SolarFinancials {
+    annualGenerationKwh: number;
+    annualSavingsBrl: number;
+    paybackYears: number;
+    twentyYearSavings: number;
+    systemSizeKw: number;
 }
