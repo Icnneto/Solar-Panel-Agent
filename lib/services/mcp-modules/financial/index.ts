@@ -1,4 +1,4 @@
-import { SolarFinancials } from "@/lib/types";
+import { ServiceResponse, SolarFinancials } from "@/lib/types";
 
 /**
  * Data is hardcoded
@@ -6,28 +6,43 @@ import { SolarFinancials } from "@/lib/types";
  * For production it should be dynamic
  */
 
-export function calculateSolarROI(
+export function calculateROIService(
     yearlySunHours: number,
     maxPanels: number
-): SolarFinancials {
-    const PANEL_WATTAGE = 400;
-    const EFFICIENCY_FACTOR = 0.75;
-    const ENERGY_PRICE = 0.189; // Average cost per kWh in USA (from FRED - nov/2025)
-    const COST_PER_PANEL_INSTALLED = 120;
+): ServiceResponse<SolarFinancials> {
 
-    const systemSizeKw = (maxPanels * PANEL_WATTAGE) / 1000;
-    const annualGenerationKwh = systemSizeKw * yearlySunHours * EFFICIENCY_FACTOR;
-    const annualSavingsBrl = annualGenerationKwh * ENERGY_PRICE;
+    try {
+        const PANEL_WATTAGE = 400;
+        const EFFICIENCY_FACTOR = 0.75;
+        const ENERGY_PRICE_USD = 0.189; // Data from nov/2025 - FRED
+        const HARDWARE_COST_PER_PANEL = 120;
 
-    const totalInstallCost = maxPanels * COST_PER_PANEL_INSTALLED;
-    const paybackYears = totalInstallCost / annualSavingsBrl;
-    const twentyYearSavings = (annualSavingsBrl * 20) - totalInstallCost;
+        const INSTALL_FACTOR = 1.5;
 
-    return {
-        systemSizeKw: Math.round(systemSizeKw),
-        annualGenerationKwh: Math.round(annualGenerationKwh),
-        annualSavingsBrl: Math.round(annualSavingsBrl),
-        paybackYears: Number(paybackYears.toFixed(1)),
-        twentyYearSavings: Math.round(twentyYearSavings)
-    };
+        const systemSizeKw = (maxPanels * PANEL_WATTAGE) / 1000;
+        const annualGenerationKwh = systemSizeKw * yearlySunHours * EFFICIENCY_FACTOR;
+        const annualSavingsUsd = annualGenerationKwh * ENERGY_PRICE_USD;
+        const totalInstallCost = (maxPanels * HARDWARE_COST_PER_PANEL) * INSTALL_FACTOR;
+        const paybackYears = totalInstallCost / annualSavingsUsd;
+        const twentyYearSavings = (annualSavingsUsd * 20) - totalInstallCost;
+
+        return {
+            success: true,
+            message: "ROI Calculated Successfully",
+            data: {
+                systemSizeKw: Math.round(systemSizeKw * 10) / 10,
+                annualGenerationKwh: Math.round(annualGenerationKwh),
+                annualSavingsUsd: Math.round(annualSavingsUsd),
+                installationCost: Math.round(totalInstallCost),
+                paybackYears: Number(paybackYears.toFixed(1)),
+                twentyYearSavings: Math.round(twentyYearSavings)
+            }
+        };
+    } catch (error) {
+        return {
+            success: false,
+            message: "Error calculating ROI",
+            error
+        };
+    }
 }
