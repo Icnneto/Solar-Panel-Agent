@@ -2,7 +2,7 @@ import { getCoordsFromAddress } from "@/lib/data-access/google-maps-api";
 import { fetchSolarInsights } from "@/lib/data-access/google-solar-api";
 import { ServiceResponse, SolarBuildingInsights } from "@/lib/types";
 
-export async function getCoordsFromAddressService(address: string): Promise<ServiceResponse<SolarBuildingInsights>> {
+export async function getBuildingInsightsService(address: string): Promise<ServiceResponse<SolarBuildingInsights>> {
     try {
         const coordsRes = await getCoordsFromAddress(address);
 
