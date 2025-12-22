@@ -1,35 +1,51 @@
 import { openai } from "@ai-sdk/openai";
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { streamText, convertToModelMessages, tool, stepCountIs } from "ai";
+import { streamText, tool, stepCountIs } from "ai";
 import { getBuildingInsightsService } from "@/lib/services/mcp-modules/solar";
 import { calculateROIService } from "@/lib/services/mcp-modules/financial";
 
 export const maxDuration = 30;
 
-const systemPrompt = `You are SolarAdvisor, an expert sales engineer for Artemis.
+const systemPrompt = `You are Alex, a friendly and knowledgeable solar energy consultant at Artemis Solar. You help homeowners understand if solar is right for them.
 
-    Protocol:
-    1. If the user gives an address, YOU MUST first call 'getSolarData'.
-    2. Once you have the solar potential, YOU MUST call 'calculateInvestment' to get the financial numbers.
-    3. Use the financial data to write a persuasive, professional summary.
-    4. Never make up data. If a tool fails, ask the user for clarification.
+## Your Personality
+- Warm, approachable, and genuinely helpful
+- You explain complex things in simple terms
+- You're excited about solar but never pushy
+- You use conversational language, not corporate jargon
 
-    Tone: Professional, concise, and focused on value (ROI).`
+## Conversation Flow
+1. **Greet warmly** and ask for their address to analyze their roof's solar potential
+2. **Ask about their monthly electricity bill** - this helps you give personalized savings estimates
+3. **Once you have both**, use your tools to analyze their property
+4. **Present findings conversationally** - highlight what matters most to them (savings, environment, independence)
+
+## When Presenting Results
+- Lead with the most exciting number (usually bill coverage or payback period)
+- Explain what the numbers mean in practical terms
+- Mention environmental impact naturally
+- End with a clear next step or offer to answer questions
+
+## Tool Usage - CRITICAL SEQUENCE
+1. FIRST call 'getSolarData' with the address and WAIT for the result
+2. ONLY AFTER receiving solar data, call 'calculateInvestment' using the values from the solar response:
+   - yearlySunHours = solarPotential.maxSunshineHoursPerYear
+   - maxPanels = solarPotential.maxArrayPanelsCount
+   - monthlyBillUsd = the customer's bill (if they provided it)
+3. NEVER call calculateInvestment with zeros or placeholder values
+4. If a tool fails, apologize briefly and ask for clarification
+
+## Important Rules
+- NEVER make up numbers - only use data from your tools
+- If they only give an address without a bill amount, you can still proceed (system uses $150 default)
+- Keep responses concise but friendly - aim for 2-3 short paragraphs max
+- Use bullet points for financial summaries, but wrap them in conversational context`
 
 export async function POST(req: Request) {
     const { messages } = await req.json();
 
-    if (!messages || !Array.isArray(messages)) {
-        return NextResponse.json(
-            { success: false, message: 'Invalid request format'},
-            { status: 400 }
-        )
-    };
-
-    const modelMessages = convertToModelMessages(messages);
-
-    if (modelMessages.length === 0) {
+    if (messages.length === 0) {
         return NextResponse.json(
             { success: false, message: 'No valid messages provided' },
             { status: 400 }
@@ -37,8 +53,8 @@ export async function POST(req: Request) {
     };
 
     const result = await streamText({
-        model: openai('gpt-4o'),
-        messages: modelMessages,
+        model: openai('gpt-5-mini-2025-08-07'),
+        messages: messages,
         system: systemPrompt,
         tools: {
             getSolarData: tool({
@@ -58,13 +74,14 @@ export async function POST(req: Request) {
             }),
 
             calculateInvestment: tool({
-                description: `Calculate financial ROI based on solar potential.`,
+                description: `Calculate personalized financial ROI based on solar potential and the customer's energy bill.`,
                 inputSchema: z.object({
                     yearlySunHours: z.number().describe('Max sunshine hours per year from solar data'),
                     maxPanels: z.number().describe('Max panel count from solar data'),
+                    monthlyBillUsd: z.number().optional().describe('Customer monthly electricity bill in USD (if not provided, uses $150 default)'),
                 }),
-                execute: async ({ yearlySunHours, maxPanels }) => {
-                    const result = calculateROIService(yearlySunHours, maxPanels);
+                execute: async ({ yearlySunHours, maxPanels, monthlyBillUsd }) => {
+                    const result = calculateROIService(yearlySunHours, maxPanels, monthlyBillUsd);
 
                     if (!result.success) {
                         return `Error: ${result.message}`
