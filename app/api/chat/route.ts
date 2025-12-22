@@ -1,7 +1,7 @@
 import { openai } from "@ai-sdk/openai";
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { streamText, tool, stepCountIs } from "ai";
+import { streamText, tool, stepCountIs, convertToModelMessages } from "ai";
 import { getBuildingInsightsService } from "@/lib/services/mcp-modules/solar";
 import { calculateROIService } from "@/lib/services/mcp-modules/financial";
 
@@ -45,7 +45,16 @@ const systemPrompt = `You are Alex, a friendly and knowledgeable solar energy co
 export async function POST(req: Request) {
     const { messages } = await req.json();
 
-    if (messages.length === 0) {
+    if (!messages || !Array.isArray(messages)) {
+        return NextResponse.json(
+            { success: false, message: 'Invalid request format' },
+            { status: 400 }
+        )
+    };
+
+    const modelMessages = convertToModelMessages(messages);
+
+    if (modelMessages.length === 0) {
         return NextResponse.json(
             { success: false, message: 'No valid messages provided' },
             { status: 400 }
@@ -54,7 +63,7 @@ export async function POST(req: Request) {
 
     const result = await streamText({
         model: openai('gpt-5-mini-2025-08-07'),
-        messages: messages,
+        messages: modelMessages,
         system: systemPrompt,
         tools: {
             getSolarData: tool({
