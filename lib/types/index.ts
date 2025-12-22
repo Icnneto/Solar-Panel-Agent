@@ -41,6 +41,9 @@ export interface SolarFinancials {
     twentyYearSavings: number;
     systemSizeKw: number;
     installationCost: number;
+    monthlyBillCoverage: number;
+    recommendedPanels: number;
+    co2OffsetKg: number;
 }
 
 export type ServiceResponse<T = null> = {
@@ -48,4 +51,25 @@ export type ServiceResponse<T = null> = {
     message: string;
     data?: T;
     error?: any;
+}
+
+export interface Message {
+    id: string;
+    role: "user" | "assistant" | "system";
+    content: string;
+    createdAt?: Date;
+}
+
+export interface ChatRequest {
+    messages: Message[];
+    model?: string;
+}
+
+export interface ChatResponse {
+    message: Message;
+    usage?: {
+        prompt_tokens: number;
+        completion_tokens: number;
+        total_tokens: number;
+    };
 }
