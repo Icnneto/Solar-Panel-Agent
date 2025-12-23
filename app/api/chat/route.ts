@@ -5,6 +5,8 @@ import { streamText, tool, stepCountIs, convertToModelMessages } from "ai";
 import { getBuildingInsightsService } from "@/lib/services/mcp-modules/solar";
 import { calculateROIService } from "@/lib/services/mcp-modules/financial";
 
+export const runtime = 'edge'
+
 export const maxDuration = 30;
 
 const systemPrompt = `You are Alex, a friendly and knowledgeable solar energy consultant at Artemis Solar. You help homeowners understand if solar is right for them.
