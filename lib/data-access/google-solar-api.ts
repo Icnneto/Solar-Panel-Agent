@@ -1,4 +1,3 @@
-import 'dotenv/config';
 import { LatLng, ServiceResponse, SolarBuildingInsights } from "../types";
 
 export async function fetchSolarInsights(coords: LatLng): Promise<ServiceResponse<SolarBuildingInsights>> {

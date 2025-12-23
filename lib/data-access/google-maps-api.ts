@@ -1,4 +1,3 @@
-import 'dotenv/config';
 import { GeocodingResponse, LatLng, ServiceResponse } from "../types";
 
 export async function getCoordsFromAddress(address: string): Promise<ServiceResponse<LatLng>> {
