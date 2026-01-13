@@ -7,7 +7,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://chat.vercel.ai"),
-  title: "Artemis - Your Solar Agent",
+  title: "Icarus - Your Solar Agent",
   description: "AI Agent for solar energy systems",
 };
 
