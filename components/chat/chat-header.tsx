@@ -24,7 +24,7 @@ function PureChatHeader({ onNewChat }: ChatHeaderProps) {
         <div className="flex size-8 items-center justify-center rounded-lg bg-[#006cff] text-white">
           <SparklesIcon size={16} />
         </div>
-        <span className="font-semibold text-foreground">Artemis</span>
+        <span className="font-semibold text-foreground">Icarus</span>
       </div>
 
       {/* Actions */}

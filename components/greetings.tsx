@@ -26,7 +26,7 @@ export const Greeting = () => {
                 initial={{ opacity: 0, y: 10 }}
                 transition={{ delay: 0.5 }}
             >
-                Welcome to Artemis
+                Welcome to Icarus
             </motion.div>
 
             <motion.div

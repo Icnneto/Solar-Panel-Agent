@@ -121,7 +121,7 @@ function PureMultimodalInput({
         </div>
 
         <p className="text-center text-xs text-muted-foreground">
-          Artemis can make mistakes. Verify important information.
+          Icarus can make mistakes. Verify important information.
         </p>
       </div>
     </div>
